@@ -147,9 +147,11 @@ pub unsafe extern "C" fn capturer_frame(c: *mut scrap::Capturer) -> FrameOrErr {
     let c = &mut *c;
     match c.frame() {
         Ok(frame) => {
-            ret.data = frame.as_ptr();
-            ret.len = frame.len();
-            std::mem::forget(frame);
+            let mut out_frame: Vec<u8> = vec!(0; frame.len());
+            out_frame.copy_from_slice(&frame);
+            ret.data = out_frame.as_ptr();
+            ret.len = out_frame.len();
+            std::mem::forget(out_frame);
         }
         Err(ref err) if err.kind() == std::io::ErrorKind::WouldBlock => {
             ret.would_block = 1;
